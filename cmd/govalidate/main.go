@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/coc1961/govalidate/internal/errorvalidator"
 	"github.com/coc1961/govalidate/internal/importvalidator"
 )
 
@@ -45,13 +46,24 @@ func main() {
 	}
 
 	ret := []importvalidator.ImportsStatus{}
+	ret1 := []errorvalidator.ErrorStatus{}
 	for _, filePath := range src {
-		tmp, err := importvalidator.ValidateImports(filePath, excludePackage...)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+		{
+			tmp, err := importvalidator.ValidateImports(filePath, excludePackage...)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			ret = append(ret, tmp...)
 		}
-		ret = append(ret, tmp...)
+		{
+			tmp, err := errorvalidator.ValidateErrors(filePath, excludePackage...)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			ret1 = append(ret1, tmp...)
+		}
 	}
 
 	if *verbose {
@@ -62,8 +74,14 @@ func main() {
 			}
 			fmt.Println(Reset)
 		}
+		for _, e := range ret1 {
+			fmt.Println(Blue, e, Gray)
+		}
 	}
-	if len(ret) > 0 {
+	if len(ret) > 0 || len(ret1) > 0 {
 		os.Exit(1)
 	}
 }
+
+// CAQECAQQh8xrIjkNCD91MMFs37Hj_nfJeIUdlWYfU57rPWawJ0QAP52XIIY-DOi4
+// 86100038456_6331796777776b677f73
